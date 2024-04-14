@@ -3,6 +3,7 @@ import Img from "../img/img.png";
 import Attach from "../img/attach.png";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
+import { AES } from 'crypto-js';
 import {
   arrayUnion,
   doc,
@@ -14,14 +15,22 @@ import { db, storage } from "../firebase";
 import { v4 as uuid } from "uuid";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
+
 const Input = () => {
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
-
+  const secretKey = currentUser.uid;
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
 
+  const encryptMessage = (message) => {
+    return AES.encrypt(message, secretKey).toString();
+  };
+  const handleTextChange = (e) => {
+    const encryptedText = encryptMessage(e.target.value);
+    setText(encryptedText);
+  };
   const handleSend = async () => {
     if (file) {
       console.log(fileName);
@@ -79,7 +88,7 @@ const Input = () => {
       <input
         type="text"
         placeholder="Type something..."
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => handleTextChange}
         value={text}
       />
       <div className="send">
